@@ -1,0 +1,154 @@
+import React,{Component} from 'react';
+import { StyleSheet, Text, View,Dimensions } from 'react-native';
+import MapView from 'react-native-maps';
+
+const{width,height}=Dimensions.get('window')
+
+export default class App extends Component {
+
+  constructor(){
+    super()
+    this.state={
+      region:{
+        latitude:null,
+        longitude:null,
+        latitudeDelta:null,
+        longitudeDelta:null
+      }
+    }
+  }
+  calcDelta(lat,lon,accuracy){
+    const oneDegreeOfLongidInMeters=111.32;
+    const circunference=(40075 / 360)
+
+    const latDelta= accuracy *(1 / (Math.cos(lat)* circunference))
+    const lonDelta = (accuracy / oneDegreeOfLongidInMeters)
+
+    this.setState({
+      region: {
+        latitude:lat,
+        longitude:lon,
+        latitudeDelta:latDelta,
+        longitudeDelta:lonDelta
+      }
+    })
+  }
+  componentDidMount(){
+    navigator.geolocation.getCurrentPosition(
+      (position)=>{
+        const lat=position.coords.latitude
+        const lon=position.coords.longitude
+        const accuracy=position.coords.accuracy
+        this.calcDelta(lat,lon,accuracy)
+      }
+    )
+  }
+  
+  Marker(){
+    return{
+      latitude:this.state.region.latitude,
+      longitude:this.state.region.longitude,
+      
+    }
+  }
+  
+  render(){
+    console.log('App.js latitude: '+this.state.region.latitude+' longitude: '+this.state.region.longitude)
+  return (
+    <View style={styles.container}>
+      {this.state.region.latitude ? <MapView 
+      style={styles.map}
+      initialRegion={this.state.region}
+      >
+        <MapView.Marker
+        coordinate={this.Marker()}
+        title="Aqui estoy"
+        description="home"
+        />
+      </MapView>: null }
+      
+    </View>
+  );
+}
+}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  map:{
+    flex:1,
+    width:width,
+    
+    
+   
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+import React,{useEffect,useState} from 'react';
+import axios from 'axios';
+import {Table, TableContainer, TableHead, TableCell, TableBody, TableRow} from '@material-ui/core';
+
+const Url='http://192.168.10.128:3030/donadores';
+
+
+const Donadores=()=>{
+const [data, setData] = useState([]);
+
+
+const peticionGet=async()=>{
+  await axios.get(Url)
+  .then(response=>{
+      setData(response.data);
+      console.log(response.data)
+  })
+}
+
+useEffect(()=>{
+  async function fetchData(){
+    await peticionGet();
+  }
+  fetchData();
+  
+},[])
+
+return (
+  <div className="text-center">
+   <TableContainer>
+   <Table>
+     <TableHead>
+       <TableRow>
+         <TableCell>Nombre</TableCell>
+         <TableCell>Latitud</TableCell>
+         <TableCell>Longitud</TableCell>
+       </TableRow>
+     </TableHead>
+
+     
+     <TableBody>
+          {data.map(dato=>(
+            <TableRow key={dato.id}>
+              <TableCell>{dato.name}</TableCell>
+              <TableCell>{dato.latitud}</TableCell>
+              <TableCell>{dato.longitud}</TableCell>
+            </TableRow>
+          ))}
+          </TableBody> 
+     </Table>  
+   </TableContainer>
+  </div>
+);
+}
+export default Donadores

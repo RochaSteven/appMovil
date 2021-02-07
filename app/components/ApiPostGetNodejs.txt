@@ -1,0 +1,92 @@
+import React from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, ActivityIndicator } from 'react-native';
+
+
+export default class App extends React.Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      isLoading: true,
+      dataSource: []
+    }
+  }
+
+  //metodo que se ejecuta uando la app se monta en el dispositivo
+  componentDidMount(){
+
+    fetch('http://192.168.0.157:3030/donadores')
+      .then((response) => response.json())
+      .then((json) => {
+        this.setState({dataSource: json.data})
+        console.log(json)        
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        this.setState({isLoading:false})
+      });
+      
+
+    fetch('http://192.168.0.157:3030/donadores/create', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'Maria Palacios', 
+      longitud: '0r9849r',  
+      latitud:'03345847' 
+    }),
+  });
+  }
+
+  
+
+  render () {
+   
+    if (this.state.isLoading) {
+      return (
+        <View style = {styles.container}>
+          <ActivityIndicator />
+        </View>
+      )
+    }else{
+      return(
+        <View style={{ flex: 1, padding: 24 }}>
+         <Text>Contenido cargado, la app no funciona funciona :)</Text>
+        </View>
+      );
+    }
+  }    
+}
+  
+const styles = StyleSheet.create({
+  container: {
+    flex:1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  item: {
+    flex: 1,
+    alignSelf: 'stretch',
+    margin: 10, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee'
+  }
+});
+
+
+/*<Text style={styles.title}>Formulario</Text>
+          <TextInput
+        style={styles.input}
+        placeholder='Nombre'
+         />
+            <TextInput style={styles.input}>{position.latitude}</TextInput>
+            <TextInput style={styles.input}>{position.longitude} </TextInput>
+          <Button title="Submit"  onPress={handleSubmit(onSubmit)}/>*/
